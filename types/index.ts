@@ -140,3 +140,80 @@ export interface ErrorResponse {
   code?: string;
 }
 
+export interface UserResponse {
+  id: number;
+  email: string;
+  fullName: string;
+  role: Role;
+  status: UserStatus;
+  mustChangePassword?: boolean;
+  department?: string;
+  avatarUrl?: string;
+  createdAt?: string;
+}
+
+export interface AuthResponse {
+  accessToken: string;
+  refreshToken: string;
+  tokenType: string;
+  expiresIn: number;
+  user: UserResponse;
+  mustChangePassword?: boolean;
+}
+
+export interface StudentProfileResponse {
+  id: number;
+  userId: number;
+  fullName: string;
+  email: string;
+  studentId: string;
+  department: string;
+  degree: string;
+  batch: string;
+  intake: string;
+  currentGpa: number;
+  riskStatus: RiskStatus;
+  latestProgressStatus?: ProgressStatus;
+  // Extended Details
+  parentName?: string;
+  parentPhone?: string;
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  permanentAddress?: string;
+  allocatedMentorId?: number;
+  allocatedMentorName?: string;
+  // Attendance & Engagement Metrics
+  attendanceRate?: number;
+  labAttendanceRate?: number;
+  consecutiveAbsences?: number;
+}
+
+export interface MentorProfileResponse {
+  id: number;
+  userId: number;
+  fullName: string;
+  email: string;
+  department: string;
+  specialization: string;
+  designation: string;
+  officeLocation: string;
+  contactPhone: string;
+  capacity: number;
+  currentStudentCount: number;
+}
+
+export interface AllocationResponse {
+  id: number;
+  studentUserId: number;
+  studentName: string;
+  studentIdNumber: string;
+  mentorUserId: number;
+  mentorName: string;
+  batch: string;
+  department: string;
+  allocationType: AllocationType;
+  status: AllocationStatus;
+  allocatedAt: string;
+  deactivatedAt?: string | null;
+}
+
