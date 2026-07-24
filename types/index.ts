@@ -217,3 +217,182 @@ export interface AllocationResponse {
   deactivatedAt?: string | null;
 }
 
+export interface SlotResponse {
+  id: number;
+  mentorUserId: number;
+  mentorName?: string;
+  slotDate: string;
+  startTime: string;
+  endTime: string;
+  mode: MeetingMode;
+  location?: string | null;
+  meetingLink?: string | null;
+  status: SlotStatus;
+  assignedStudentUserId?: number | null;
+  assignedStudentName?: string | null;
+  allocationStatus?: SlotAllocationStatus | null;
+  allocationId?: number | null;
+}
+
+export interface MeetingResponse {
+  id: number;
+  allocationId: number;
+  mentorUserId: number;
+  mentorName: string;
+  studentUserId: number;
+  studentName: string;
+  scheduledDate: string;
+  scheduledTime: string;
+  mode: MeetingMode;
+  location?: string | null;
+  meetingLink?: string | null;
+  status: MeetingStatus;
+  attendanceStatus: AttendanceStatus;
+  topic?: string;
+  rescheduleReason?: string | null;
+  notesSummary?: string | null;
+}
+
+export interface MeetingRequestResponse {
+  id: number;
+  studentUserId: number;
+  studentName: string;
+  mentorUserId: number;
+  mentorName: string;
+  proposedDate: string;
+  proposedTime: string;
+  topic: string;
+  status: RequestStatus;
+  reviewNotes?: string | null;
+  createdAt: string;
+}
+
+export interface SessionNoteResponse {
+  id: number;
+  meetingId: number;
+  mentorUserId: number;
+  studentUserId: number;
+  studentName?: string;
+  discussionNotes: string;
+  actionItems: string;
+  progressStatus: ProgressStatus;
+  followUpDate?: string | null;
+  isPrivate: boolean;
+  createdAt: string;
+  escalationId?: number | null;
+}
+
+export interface EscalationResponse {
+  id: number;
+  sessionNoteId?: number;
+  mentorUserId: number;
+  mentorName?: string;
+  studentUserId: number;
+  studentName: string;
+  studentBatch?: string;
+  category: EscalationCategory;
+  description: string;
+  escalatedToRole: EscalationRole;
+  escalatedToUserId?: number | null;
+  status: EscalationStatus;
+  resolutionNotes?: string | null;
+  resolvedAt?: string | null;
+  createdAt: string;
+}
+
+export interface ProfileChangeRequestResponse {
+  id: number;
+  studentUserId: number;
+  studentName: string;
+  fieldName: string;
+  oldValue: string;
+  newValue: string;
+  reason: string;
+  status: RequestStatus;
+  reviewerNotes?: string | null;
+  createdAt: string;
+}
+
+export interface DataCollectionTaskResponse {
+  id: number;
+  title: string;
+  description: string;
+  batch: string;
+  department: string;
+  dueDate: string;
+  creatorMentorName: string;
+  status: RecipientStatus;
+}
+
+export interface NotificationResponse {
+  id: number;
+  type: NotificationType;
+  title: string;
+  message: string;
+  read: boolean;
+  createdAt: string;
+  linkUrl?: string;
+}
+
+export interface DashboardSummary {
+  totalStudents: number;
+  totalMentors: number;
+  activeAllocations: number;
+  unallocatedStudents: number;
+  allocationPercentage: number;
+  totalMeetingsCompleted: number;
+  attendanceRate: number;
+  studentsOnTrack: number;
+  studentsNeedsAttention: number;
+  studentsAtRisk: number;
+  studentsCritical: number;
+  openEscalations: number;
+  resolvedEscalations: number;
+  totalEscalations: number;
+}
+
+export interface MentorDashboardSummary {
+  mentorUserId: number;
+  totalStudents: number;
+  capacity: number;
+  studentsOnTrack: number;
+  studentsNeedsAttention: number;
+  studentsAtRisk: number;
+  studentsCritical: number;
+  totalMeetings: number;
+  completedMeetings: number;
+  openEscalations: number;
+  pendingMeetingRequestsCount: number;
+}
+
+export interface StudentDashboardSummary {
+  studentUserId: number;
+  mentorUserId: number;
+  mentorName: string;
+  latestProgressStatus: ProgressStatus;
+  totalMeetings: number;
+  completedMeetings: number;
+  upcomingMeetings: number;
+  attendancePresent: number;
+  attendanceAbsent: number;
+  openEscalations: number;
+  totalSessionNotes: number;
+  nextMeeting?: MeetingResponse;
+}
+
+export interface MentorFilteredViewItem {
+  mentorUserId: number;
+  mentorName: string;
+  department: string;
+  specialization: string;
+  capacity: number;
+  currentStudentCount: number;
+  students: {
+    studentUserId: number;
+    studentName: string;
+    studentIdNumber: string;
+    batch: string;
+    progressStatus: ProgressStatus;
+    riskStatus: RiskStatus;
+  }[];
+}
