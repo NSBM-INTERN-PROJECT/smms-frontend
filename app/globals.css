@@ -1,0 +1,152 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #0f172a;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-geist-sans), system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 12mm 14mm;
+    size: A4 portrait;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #0f172a !important;
+    font-size: 10pt !important;
+    line-height: 1.35 !important;
+    overflow: visible !important;
+    height: auto !important;
+    min-height: auto !important;
+  }
+
+  /* When a report modal is open, isolate it completely by hiding the rest of the application shell */
+  body.report-modal-open > *:not(#report-modal-portal) {
+    display: none !important;
+  }
+
+  /* Reset portal wrapper and remove any fixed viewport scroll containers */
+  #report-modal-portal {
+    display: block !important;
+    position: static !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    background: #ffffff !important;
+    overflow: visible !important;
+  }
+
+  #report-modal-portal .report-backdrop {
+    position: static !important;
+    inset: auto !important;
+    width: 100% !important;
+    height: auto !important;
+    min-height: auto !important;
+    background: #ffffff !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    overflow: visible !important;
+    display: block !important;
+  }
+
+  #report-modal-portal .report-card {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Hide navigation, action bars, buttons, and interactive controls */
+  nav,
+  header,
+  aside,
+  button,
+  input[type="checkbox"],
+  .no-print {
+    display: none !important;
+  }
+
+  /* Reset printable area to fill printable document cleanly */
+  .printable-report-area {
+    position: static !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: visible !important;
+    background: #ffffff !important;
+  }
+
+  /* Multi-page table handling */
+  table {
+    width: 100% !important;
+    border-collapse: collapse !important;
+  }
+
+  thead {
+    display: table-header-group !important;
+  }
+
+  tbody {
+    display: table-row-group !important;
+  }
+
+  tr {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  th,
+  td {
+    padding: 5px 8px !important;
+  }
+
+  /* Keep cards and signature blocks unbroken across page boundaries */
+  .print-page-break-inside-avoid {
+    break-inside: avoid !important;
+    page-break-inside: avoid !important;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    break-after: avoid !important;
+    page-break-after: avoid !important;
+  }
+
+  /* Prevent overflow clipping on tables and flex items */
+  .overflow-x-auto,
+  .overflow-hidden,
+  .overflow-y-auto {
+    overflow: visible !important;
+  }
+}
