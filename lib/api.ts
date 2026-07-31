@@ -251,3 +251,253 @@ export const userApi = {
   },
 };
 
+// ==========================================
+// 3. Allocations
+// ==========================================
+export const allocationApi = {
+  listAll: async (status?: string, page = 0, size = 500) => {
+    const res = await apiClient.get<PagedResponse<AllocationResponse>>('/api/v1/allocations', {
+      params: { page, size, ...(status && status !== 'ALL' ? { status } : {}) },
+    });
+    return res.data.content || [];
+  },
+
+  manualAllocate: async (studentUserId: number, mentorUserId: number) => {
+    const res = await apiClient.post<AllocationResponse>('/api/v1/allocations', {
+      studentUserId,
+      mentorUserId,
+    });
+    return res.data;
+  },
+
+  randomAllocate: async (params?: {
+    batch?: string;
+    department?: string;
+    studentIds?: number[];
+    skipFullMentors?: boolean;
+  }) => {
+    const res = await apiClient.post<{
+      totalEligibleStudents: number;
+      allocatedCount: number;
+      skippedCount: number;
+      allocations: AllocationResponse[];
+    }>('/api/v1/allocations/random', params || {});
+    return res.data;
+  },
+
+  getMentorStudents: async (mentorUserId: number) => {
+    const res = await apiClient.get<AllocationResponse[]>(`/api/v1/allocations/mentor/${mentorUserId}`);
+    return res.data || [];
+  },
+
+  getStudentMentor: async (studentUserId: number) => {
+    const res = await apiClient.get<AllocationResponse>(`/api/v1/allocations/student/${studentUserId}`);
+    return res.data;
+  },
+
+  transfer: async (allocationId: number, newMentorUserId: number, reason?: string) => {
+    const res = await apiClient.put<AllocationResponse>(`/api/v1/allocations/${allocationId}/transfer`, {
+      newMentorUserId,
+      reason: reason || 'Mentor reallocation',
+    });
+    return res.data;
+  },
+
+  deactivate: async (allocationId: number, reason?: string) => {
+    const res = await apiClient.put<AllocationResponse>(`/api/v1/allocations/${allocationId}/deactivate`, {
+      reason: reason || 'Deactivated',
+    });
+    return res.data;
+  },
+
+  getUnallocatedStudents: async () => {
+    const res = await apiClient.get<number[]>('/api/v1/allocations/unallocated-students');
+    return res.data || [];
+  },
+};
+
+// ==========================================
+// 4. Meetings & Slots
+// ==========================================
+export const meetingApi = {
+  // Slots
+  bulkCreateSlots: async (slots: Partial<SlotResponse>[], studentUserIds?: number[]) => {
+    const res = await apiClient.post<{
+      totalRequested: number;
+      createdCount: number;
+      assignedCount: number;
+      slots: SlotResponse[];
+    }>('/api/v1/meetings/slots', { slots, studentUserIds });
+    return res.data;
+  },
+
+  getMySlots: async (page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<SlotResponse>>('/api/v1/meetings/slots/mentor/me', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  cancelSlot: async (slotId: number) => {
+    const res = await apiClient.put<SlotResponse>(`/api/v1/meetings/slots/${slotId}/cancel`);
+    return res.data;
+  },
+
+  getStudentSlotInvitations: async () => {
+    const res = await apiClient.get<SlotResponse[]>('/api/v1/meetings/slots/student/me/invitations');
+    return res.data || [];
+  },
+
+  respondToSlot: async (slotId: number, accepted: boolean, rescheduleReason?: string) => {
+    const res = await apiClient.put(`/api/v1/meetings/slots/${slotId}/respond`, {
+      response: accepted ? 'ACCEPTED' : 'RESCHEDULE_REQUESTED',
+      rescheduleReason,
+    });
+    return res.data;
+  },
+
+  // Meetings
+  getTodaysMeetings: async () => {
+    const res = await apiClient.get<MeetingResponse[]>('/api/v1/meetings/mentor/me/today');
+    return res.data || [];
+  },
+
+  getUpcomingMeetingsMentor: async () => {
+    const res = await apiClient.get<MeetingResponse[]>('/api/v1/meetings/mentor/me/upcoming');
+    return res.data || [];
+  },
+
+  getMentorMeetingHistory: async (page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<MeetingResponse>>('/api/v1/meetings/mentor/me/history', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  getStudentUpcoming: async () => {
+    const res = await apiClient.get<MeetingResponse[]>('/api/v1/meetings/student/me/upcoming');
+    return res.data || [];
+  },
+
+  getStudentMeetingHistory: async (page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<MeetingResponse>>('/api/v1/meetings/student/me/history', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  getAllMeetingsForUser: async (role: Role) => {
+    if (role === Role.STUDENT) {
+      const [upcoming, history] = await Promise.all([
+        meetingApi.getStudentUpcoming(),
+        meetingApi.getStudentMeetingHistory(),
+      ]);
+      const combined = [...upcoming, ...history];
+      return Array.from(new Map(combined.map((m) => [m.id, m])).values());
+    } else {
+      const [today, upcoming, history] = await Promise.all([
+        meetingApi.getTodaysMeetings(),
+        meetingApi.getUpcomingMeetingsMentor(),
+        meetingApi.getMentorMeetingHistory(),
+      ]);
+      const combined = [...today, ...upcoming, ...history];
+      return Array.from(new Map(combined.map((m) => [m.id, m])).values());
+    }
+  },
+
+  markAttendance: async (meetingId: number, status: AttendanceStatus, notes?: string) => {
+    const res = await apiClient.put<MeetingResponse>(`/api/v1/meetings/${meetingId}/attendance`, {
+      status,
+      notes,
+    });
+    return res.data;
+  },
+
+  reschedule: async (meetingId: number, newDate: string, newTime: string, reason?: string) => {
+    const res = await apiClient.put<MeetingResponse>(`/api/v1/meetings/${meetingId}/reschedule`, {
+      newDate,
+      newTime,
+      reason,
+    });
+    return res.data;
+  },
+
+  cancel: async (meetingId: number, reason?: string) => {
+    const res = await apiClient.put<MeetingResponse>(`/api/v1/meetings/${meetingId}/cancel`, {
+      reason,
+    });
+    return res.data;
+  },
+
+  complete: async (meetingId: number) => {
+    const res = await apiClient.put<MeetingResponse>(`/api/v1/meetings/${meetingId}/complete`);
+    return res.data;
+  },
+
+  // Meeting Requests
+  submitRequest: async (data: {
+    mentorUserId: number;
+    preferredDate: string;
+    preferredTime: string;
+    reason: string;
+  }) => {
+    const res = await apiClient.post<MeetingRequestResponse>('/api/v1/meetings/requests', data);
+    return res.data;
+  },
+
+  getPendingRequestsMentor: async (page = 0, size = 50) => {
+    const res = await apiClient.get<PagedResponse<MeetingRequestResponse>>(
+      '/api/v1/meetings/requests/mentor/me/pending',
+      { params: { page, size } }
+    );
+    return res.data.content || [];
+  },
+
+  getMyRequestsStudent: async (page = 0, size = 50) => {
+    const res = await apiClient.get<PagedResponse<MeetingRequestResponse>>(
+      '/api/v1/meetings/requests/student/me',
+      { params: { page, size } }
+    );
+    return res.data.content || [];
+  },
+
+  approveRequest: async (
+    id: number,
+    data: {
+      reviewNotes?: string;
+      scheduledDate?: string;
+      scheduledTime?: string;
+      mode?: string;
+      location?: string;
+      meetingLink?: string;
+    }
+  ) => {
+    const res = await apiClient.put<MeetingResponse>(`/api/v1/meetings/requests/${id}/approve`, data);
+    return res.data;
+  },
+
+  rejectRequest: async (id: number, reviewNotes?: string) => {
+    const res = await apiClient.put<MeetingRequestResponse>(`/api/v1/meetings/requests/${id}/reject`, {
+      reviewNotes: reviewNotes || 'Declined.',
+    });
+    return res.data;
+  },
+
+  // Notifications
+  getNotifications: async (page = 0, size = 50) => {
+    const res = await apiClient.get<PagedResponse<NotificationResponse>>('/api/v1/meetings/notifications', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  getUnreadNotificationCount: async () => {
+    const res = await apiClient.get<number>('/api/v1/meetings/notifications/unread-count');
+    return res.data ?? 0;
+  },
+
+  markAllNotificationsRead: async () => {
+    await apiClient.put('/api/v1/meetings/notifications/mark-all-read');
+  },
+};
+
