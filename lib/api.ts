@@ -501,3 +501,246 @@ export const meetingApi = {
   },
 };
 
+// ==========================================
+// 5. Sessions & Escalations
+// ==========================================
+export const sessionApi = {
+  createNote: async (data: {
+    meetingId: number;
+    studentUserId: number;
+    discussionNotes: string;
+    actionItems?: string;
+    progressStatus?: ProgressStatus;
+    followUpDate?: string;
+    isPrivate?: boolean;
+  }) => {
+    const res = await apiClient.post<SessionNoteResponse>('/api/v1/sessions/notes', data);
+    return res.data;
+  },
+
+  getNoteByMeeting: async (meetingId: number) => {
+    const res = await apiClient.get<SessionNoteResponse>(`/api/v1/sessions/notes/meeting/${meetingId}`);
+    return res.data;
+  },
+
+  getStudentNotes: async (studentUserId: number, page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<SessionNoteResponse>>(
+      `/api/v1/sessions/notes/student/${studentUserId}`,
+      { params: { page, size } }
+    );
+    return res.data.content || [];
+  },
+
+  getMyStudentNotes: async (page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<SessionNoteResponse>>('/api/v1/sessions/notes/student/me', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  getMentorNotes: async (page = 0, size = 100) => {
+    const res = await apiClient.get<PagedResponse<SessionNoteResponse>>('/api/v1/sessions/notes/mentor/me', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  updateNote: async (id: number, data: Partial<SessionNoteResponse>) => {
+    const res = await apiClient.put<SessionNoteResponse>(`/api/v1/sessions/notes/${id}`, data);
+    return res.data;
+  },
+
+  getProgressSummary: async () => {
+    const res = await apiClient.get<Array<{
+      studentUserId: number;
+      latestProgressStatus: ProgressStatus;
+      openEscalations: number;
+      lastSessionDate: string;
+    }>>('/api/v1/sessions/notes/my-students/summary');
+    return res.data || [];
+  },
+
+  // Escalations
+  createEscalation: async (data: {
+    studentUserId: number;
+    category: EscalationCategory;
+    description: string;
+    escalatedToRole: EscalationRole;
+    sessionNoteId?: number;
+    escalatedToUserId?: number;
+  }) => {
+    const res = await apiClient.post<EscalationResponse>('/api/v1/sessions/escalations', data);
+    return res.data;
+  },
+
+  listEscalations: async (params?: {
+    page?: number;
+    size?: number;
+    status?: EscalationStatus;
+    category?: EscalationCategory;
+  }) => {
+    const res = await apiClient.get<PagedResponse<EscalationResponse>>('/api/v1/sessions/escalations', {
+      params: { page: 0, size: 500, ...params },
+    });
+    return res.data.content || [];
+  },
+
+  getStudentEscalations: async (studentUserId: number, page = 0, size = 50) => {
+    const res = await apiClient.get<PagedResponse<EscalationResponse>>(
+      `/api/v1/sessions/escalations/student/${studentUserId}`,
+      { params: { page, size } }
+    );
+    return res.data.content || [];
+  },
+
+  getMyEscalations: async (page = 0, size = 50) => {
+    const res = await apiClient.get<PagedResponse<EscalationResponse>>('/api/v1/sessions/escalations/my', {
+      params: { page, size },
+    });
+    return res.data.content || [];
+  },
+
+  updateEscalationStatus: async (
+    id: number,
+    data: { status: EscalationStatus; resolutionNotes?: string }
+  ) => {
+    const res = await apiClient.put<EscalationResponse>(`/api/v1/sessions/escalations/${id}/status`, data);
+    return res.data;
+  },
+};
+
+// ==========================================
+// 6. Reports & Dashboards
+// ==========================================
+export const reportApi = {
+  getAdminDashboard: async () => {
+    const res = await apiClient.get<{
+      totalStudents: number;
+      allocatedStudents: number;
+      unallocatedStudents: number;
+      totalMentors: number;
+      totalAllocations: number;
+      totalMeetings: number;
+      completedMeetings: number;
+      scheduledMeetings: number;
+      cancelledMeetings: number;
+      presentCount: number;
+      absentCount: number;
+      lateCount: number;
+      studentsOnTrack: number;
+      studentsNeedsAttention: number;
+      studentsAtRisk: number;
+      studentsCritical: number;
+      openEscalations: number;
+      resolvedEscalations: number;
+      totalEscalations: number;
+    }>('/api/v1/dashboard');
+    const d = res.data;
+    const totalStudents = d.totalStudents || 0;
+    const activeAllocations = d.allocatedStudents || 0;
+    const allocationPercentage =
+      totalStudents > 0 ? Math.round((activeAllocations / totalStudents) * 100) : 0;
+
+    return {
+      totalStudents,
+      activeAllocations,
+      unallocatedStudents: d.unallocatedStudents || 0,
+      allocationPercentage,
+      totalMentors: d.totalMentors || 0,
+      totalMeetings: d.totalMeetings || 0,
+      completedMeetings: d.completedMeetings || 0,
+      totalMeetingsCompleted: d.completedMeetings || 0,
+      attendanceRate:
+        d.presentCount && (d.presentCount + d.absentCount > 0)
+          ? Math.round((d.presentCount / (d.presentCount + d.absentCount)) * 100)
+          : 92,
+      studentsOnTrack: d.studentsOnTrack || 0,
+      studentsNeedsAttention: d.studentsNeedsAttention || 0,
+      studentsAtRisk: d.studentsAtRisk || 0,
+      studentsCritical: d.studentsCritical || 0,
+      openEscalations: d.openEscalations || 0,
+      resolvedEscalations: d.resolvedEscalations || 0,
+      totalEscalations: d.totalEscalations || 0,
+    };
+  },
+
+  getMentorDashboard: async (_mentorUserId?: number) => {
+    const res = await apiClient.get<{
+      mentorUserId: number;
+      totalStudents: number;
+      capacity: number;
+      studentsOnTrack: number;
+      studentsNeedsAttention: number;
+      studentsAtRisk: number;
+      studentsCritical: number;
+      totalMeetings: number;
+      completedMeetings: number;
+      openEscalations: number;
+      pendingMeetingRequestsCount: number;
+      studentSummaries: Array<{
+        studentUserId: number;
+        latestProgressStatus: ProgressStatus;
+        openEscalations: number;
+        lastSessionDate: string;
+      }>;
+    }>('/api/v1/dashboard/mentor');
+    return res.data;
+  },
+
+  getStudentDashboard: async (_studentUserId?: number) => {
+    const res = await apiClient.get<{
+      studentUserId: number;
+      mentorUserId: number;
+      mentorName: string;
+      latestProgressStatus: ProgressStatus;
+      totalMeetings: number;
+      completedMeetings: number;
+      upcomingMeetings: number;
+      attendancePresent: number;
+      attendanceAbsent: number;
+      openEscalations: number;
+      totalSessionNotes: number;
+      nextMeeting?: MeetingResponse;
+    }>('/api/v1/dashboard/student');
+    return res.data;
+  },
+
+  getMentorStudentView: async (filter?: Record<string, unknown>) => {
+    const res = await apiClient.post<Array<{
+      mentorUserId: number;
+      mentorName: string;
+      department: string;
+      capacity: number;
+      allocatedStudentsCount: number;
+      students: StudentProfileResponse[];
+    }>>('/api/v1/dashboard/mentor/students', filter || {});
+    return res.data || [];
+  },
+
+  exportStudentsCsv: (batch?: string, department?: string) => {
+    const query = new URLSearchParams();
+    if (batch) query.append('batch', batch);
+    if (department) query.append('department', department);
+    return downloadFile(`/api/v1/reports/students/export/csv?${query.toString()}`, 'student-progress.csv');
+  },
+
+  exportAllocationsCsv: (status?: string) => {
+    const query = new URLSearchParams();
+    if (status && status !== 'ALL') query.append('status', status);
+    return downloadFile(`/api/v1/reports/allocations/export/csv?${query.toString()}`, 'allocations.csv');
+  },
+
+  exportEscalationsCsv: (status?: string, category?: string) => {
+    const query = new URLSearchParams();
+    if (status && status !== 'ALL') query.append('status', status);
+    if (category && category !== 'ALL') query.append('category', category);
+    return downloadFile(`/api/v1/reports/escalations/export/csv?${query.toString()}`, 'escalations.csv');
+  },
+
+  exportStudentsExcel: (batch?: string, department?: string) => {
+    const query = new URLSearchParams();
+    if (batch) query.append('batch', batch);
+    if (department) query.append('department', department);
+    return downloadFile(`/api/v1/reports/students/export/excel?${query.toString()}`, 'student-progress.xlsx');
+  },
+};
