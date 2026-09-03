@@ -4,42 +4,64 @@ import { AppShell } from '../components/layout/AppShell';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRouter } from './RoleRouter';
 
-// Dummy components for routes
-const Login = () => <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="p-8 bg-white shadow-xl rounded-2xl w-full max-w-md border border-gray-100"><h1 className="text-2xl font-bold mb-4 text-gray-800">Login</h1></div></div>;
-const OTP = () => <div className="min-h-screen flex items-center justify-center bg-gray-50"><div className="p-8 bg-white shadow-xl rounded-2xl w-full max-w-md border border-gray-100"><h1 className="text-2xl font-bold mb-4 text-gray-800">OTP Verification</h1></div></div>;
-const AdminDashboard = () => (
-  <div className="space-y-6">
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">Admin Dashboard</h2>
-      <p className="text-gray-500">Welcome to the SMMS Administration Panel.</p>
-    </div>
-  </div>
-);
-const ClinicianDashboard = () => (
-  <div className="space-y-6">
-    <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100">
-      <h2 className="text-xl font-bold text-gray-800 mb-2">Clinician Dashboard</h2>
-      <p className="text-gray-500">Welcome to the SMMS Clinician Portal.</p>
-    </div>
-  </div>
-);
+// ─── Auth Pages ────────────────────────────────────────────────────────────────
+import LoginPage from '../pages/auth/LoginPage';
+import OtpPage from '../pages/auth/OtpPage';
+import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
+
+// ─── Admin Pages ───────────────────────────────────────────────────────────────
+import AdminDashboardPage from '../pages/admin/DashboardPage';
+import AdminUsersPage from '../pages/admin/UsersPage';
+import AdminAllocationsPage from '../pages/admin/AllocationsPage';
+import AdminEscalationsPage from '../pages/admin/EscalationsPage';
+import AdminReportsPage from '../pages/admin/ReportsPage';
+
+// ─── Coordinator Pages ─────────────────────────────────────────────────────────
+import CoordinatorDashboardPage from '../pages/coordinator/DashboardPage';
+import CoordinatorAllocationsPage from '../pages/coordinator/AllocationsPage';
+import CoordinatorEscalationsPage from '../pages/coordinator/EscalationsPage';
+
+// ─── Mentor Pages ──────────────────────────────────────────────────────────────
+import MentorDashboardPage from '../pages/mentor/DashboardPage';
+import MentorSlotsPage from '../pages/mentor/SlotsPage';
+import MentorMeetingsPage from '../pages/mentor/MeetingsPage';
+import MentorStudentsPage from '../pages/mentor/StudentsPage';
+import MentorSessionNotesPage from '../pages/mentor/SessionNotesPage';
+import MentorEscalationsPage from '../pages/mentor/EscalationsPage';
+
+// ─── Student Pages ─────────────────────────────────────────────────────────────
+import StudentDashboardPage from '../pages/student/DashboardPage';
+import StudentProfilePage from '../pages/student/ProfilePage';
+import StudentMeetingsPage from '../pages/student/MeetingsPage';
+import StudentMeetingRequestsPage from '../pages/student/MeetingRequestsPage';
+import StudentProgressPage from '../pages/student/ProgressPage';
 
 export const router = createBrowserRouter([
+  // ─── Public Routes ─────────────────────────────────────────────────────────
   {
     path: '/login',
-    element: <Login />,
+    element: <LoginPage />,
   },
   {
     path: '/otp',
-    element: <OTP />,
+    element: <OtpPage />,
   },
+  {
+    path: '/change-password',
+    element: <ChangePasswordPage />,
+  },
+
+  // ─── Root Redirect ─────────────────────────────────────────────────────────
   {
     path: '/',
     element: <RoleRouter />,
   },
+
+  // ─── Protected Routes (inside AppShell layout) ─────────────────────────────
   {
     element: <AppShell />,
     children: [
+      // ── Admin ──────────────────────────────────────────────────────────────
       {
         path: '/admin',
         element: (
@@ -48,26 +70,63 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
-          {
-            path: 'dashboard',
-            element: <AdminDashboard />,
-          },
-        ]
+          { path: 'dashboard', element: <AdminDashboardPage /> },
+          { path: 'users', element: <AdminUsersPage /> },
+          { path: 'allocations', element: <AdminAllocationsPage /> },
+          { path: 'escalations', element: <AdminEscalationsPage /> },
+          { path: 'reports', element: <AdminReportsPage /> },
+        ],
       },
+
+      // ── Coordinator ────────────────────────────────────────────────────────
       {
-        path: '/clinician',
+        path: '/coordinator',
         element: (
-          <ProtectedRoute allowedRoles={['CLINICIAN']}>
+          <ProtectedRoute allowedRoles={['COORDINATOR']}>
             <Outlet />
           </ProtectedRoute>
         ),
         children: [
-          {
-            path: 'dashboard',
-            element: <ClinicianDashboard />,
-          },
-        ]
-      }
+          { path: 'dashboard', element: <CoordinatorDashboardPage /> },
+          { path: 'allocations', element: <CoordinatorAllocationsPage /> },
+          { path: 'escalations', element: <CoordinatorEscalationsPage /> },
+        ],
+      },
+
+      // ── Mentor ─────────────────────────────────────────────────────────────
+      {
+        path: '/mentor',
+        element: (
+          <ProtectedRoute allowedRoles={['MENTOR']}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: 'dashboard', element: <MentorDashboardPage /> },
+          { path: 'slots', element: <MentorSlotsPage /> },
+          { path: 'meetings', element: <MentorMeetingsPage /> },
+          { path: 'students', element: <MentorStudentsPage /> },
+          { path: 'session-notes', element: <MentorSessionNotesPage /> },
+          { path: 'escalations', element: <MentorEscalationsPage /> },
+        ],
+      },
+
+      // ── Student ────────────────────────────────────────────────────────────
+      {
+        path: '/student',
+        element: (
+          <ProtectedRoute allowedRoles={['STUDENT']}>
+            <Outlet />
+          </ProtectedRoute>
+        ),
+        children: [
+          { path: 'dashboard', element: <StudentDashboardPage /> },
+          { path: 'profile', element: <StudentProfilePage /> },
+          { path: 'meetings', element: <StudentMeetingsPage /> },
+          { path: 'meeting-requests', element: <StudentMeetingRequestsPage /> },
+          { path: 'progress', element: <StudentProgressPage /> },
+        ],
+      },
     ],
   },
 ]);
