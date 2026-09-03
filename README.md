@@ -28,15 +28,15 @@ To prevent merge conflicts in a team setting, we use a **Role-Based Folder Struc
 - **Global/Shared Code** (`src/components/ui`, `src/api`, `src/store`) should only be modified by the Lead (or via approved PR).
 - **Page Implementation** is isolated by role. Each member works exclusively in their assigned folder.
 
-### 👥 Services Mapping
+### 👥 Member Ownership Mapping
 
-| Folder | Responsibilities |
-|-----------------|------------------|
-| `src/components/ui/`, `src/api/` | Architecture, Design System, API Integration |
-| `src/pages/auth/`, `src/pages/admin/ReportsPage.tsx` | Authentication flow, OTP, Analytics/Reports |
-| `src/pages/admin/UsersPage.tsx`, `src/pages/student/ProfilePage.tsx` | User management, profile editing |
-| `src/pages/admin/AllocationsPage.tsx`, `src/pages/coordinator/` | Coordinator flows, Allocation engine UI |
-| `src/pages/mentor/`, `src/pages/student/MeetingsPage.tsx` | Mentoring sessions, meeting requests |
+| Member | Assigned Folder | Responsibilities |
+|--------|-----------------|------------------|
+| **Member 1 (Lead)** | `src/components/ui/`, `src/api/` | Architecture, Design System, API Integration |
+| **Member 2** | `src/pages/auth/`, `src/pages/admin/ReportsPage.tsx` | Authentication flow, OTP, Analytics/Reports |
+| **Member 3** | `src/pages/admin/UsersPage.tsx`, `src/pages/student/ProfilePage.tsx` | User management, profile editing |
+| **Member 4** | `src/pages/admin/AllocationsPage.tsx`, `src/pages/coordinator/` | Coordinator flows, Allocation engine UI |
+| **Member 5** | `src/pages/mentor/`, `src/pages/student/MeetingsPage.tsx` | Mentoring sessions, meeting requests |
 
 ## 🎨 Design System
 
