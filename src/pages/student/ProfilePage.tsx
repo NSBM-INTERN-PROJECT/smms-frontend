@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useAuth } from '../../hooks/useAuth';
 import { getUser, updateUser } from '../../api/user.api';
-import { User, UpdateUserDto } from '../../types'; // Will just define inline or assume available, actually the instructions provide the types
+import { User, UpdateUserDto } from '../../types/user.types';
 import { Card } from '../../components/ui/Card';
 import { Button } from '../../components/ui/Button';
 import { Badge } from '../../components/ui/Badge';
