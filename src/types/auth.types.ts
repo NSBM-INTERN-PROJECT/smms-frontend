@@ -1,6 +1,7 @@
 export interface LoginDto {
   email: string;
-  passwordHash: string;
+  password: string;
+  role?: string;
 }
 
 export interface AuthResponse {
@@ -9,5 +10,17 @@ export interface AuthResponse {
     id: string;
     email: string;
     role: string;
+    name?: string;
   };
+}
+
+export interface OtpVerifyDto {
+  email: string;
+  otp: string;
+}
+
+export interface ChangePasswordDto {
+  currentPassword: string;
+  newPassword: string;
+  confirmPassword: string;
 }
