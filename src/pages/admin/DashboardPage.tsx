@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from '../../components/atoms/Card';
-import { Badge } from '../../components/atoms/Badge';
-import { Spinner } from '../../components/atoms/Spinner';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { Spinner } from '../../components/ui/Spinner';
 
 export default function AdminDashboardPage() {
   const [loading, setLoading] = useState(true);
