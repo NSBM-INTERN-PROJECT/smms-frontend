@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { Card } from '../../components/atoms/Card';
-import { Spinner } from '../../components/atoms/Spinner';
+import { Card } from '../../components/ui/Card';
+import { Spinner } from '../../components/ui/Spinner';
 
 export default function MentorDashboardPage() {
   const [loading, setLoading] = useState(true);
