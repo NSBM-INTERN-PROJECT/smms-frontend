@@ -1,29 +1,29 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-// @ts-ignore
-import { login } from '../../api/auth.api'; // Adjust path if necessary
-// @ts-ignore
-import { useAuthStore } from '../../store/authStore'; // Adjust path if necessary
+import { login } from '../../api/auth.api';
+import { useAuthStore } from '../../store/auth.store';
 
 export const LoginPage: React.FC = () => {
   const navigate = useNavigate();
-  // @ts-ignore
-  const setToken = useAuthStore((state) => state.setToken);
+  const setAuth = useAuthStore((state) => state.setAuth);
   
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [role, setRole] = useState('STUDENT');
+  const [error, setError] = useState('');
   
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError('');
     try {
       const res = await login({ email, password, role });
-      if (res && res.token) {
-        setToken(res.token);
+      if (res && res.token && res.user) {
+        setAuth(res.token, res.user);
       }
       navigate('/otp', { state: { email } });
-    } catch (error) {
-      console.error("Login failed", error);
+    } catch (err) {
+      setError('Login failed. Please check your credentials.');
+      console.error("Login failed", err);
     }
   };
 
