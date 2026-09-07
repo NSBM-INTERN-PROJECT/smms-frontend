@@ -1,5 +1,5 @@
 import client from './client';
-import { Meeting, CreateMeetingDto } from '../types/meeting.types';
+import type { Meeting, CreateMeetingDto } from '../types/meeting.types';
 
 export const getMeetings = async (allocationId?: string): Promise<Meeting[]> => {
   const response = await client.get<Meeting[]>('/meetings', { params: { allocationId } });
