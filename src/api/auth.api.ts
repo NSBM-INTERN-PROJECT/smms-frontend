@@ -1,8 +1,13 @@
 import client from './client';
-import { LoginDto, AuthResponse } from '../types/auth.types';
+import type { LoginDto, AuthResponse, OtpVerifyDto } from '../types/auth.types';
 
 export const login = async (data: LoginDto): Promise<AuthResponse> => {
   const response = await client.post<AuthResponse>('/auth/login', data);
+  return response.data;
+};
+
+export const verifyOtp = async (data: OtpVerifyDto): Promise<{ success: boolean; token?: string }> => {
+  const response = await client.post<{ success: boolean; token?: string }>('/auth/otp/verify', data);
   return response.data;
 };
 
