@@ -1,6 +1,6 @@
 import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
-import { AuthResponse } from '../types/auth.types';
+import type { AuthResponse } from '../types/auth.types';
 
 interface AuthState {
   token: string | null;
