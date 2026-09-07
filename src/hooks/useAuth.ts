@@ -1,6 +1,6 @@
 import { useAuthStore } from '../store/auth.store';
 import { login as loginApi } from '../api/auth.api';
-import { LoginDto } from '../types/auth.types';
+import type { LoginDto } from '../types/auth.types';
 import { useState } from 'react';
 
 export const useAuth = () => {
