@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Search, Calendar, FileText, Activity } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Input from '../../components/ui/Input';
-import Badge from '../../components/ui/Badge';
-import Spinner from '../../components/ui/Spinner';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { Input } from '../../components/ui/Input';
+import { Badge } from '../../components/ui/Badge';
+import { Spinner } from '../../components/ui/Spinner';
 import { useAuth } from '../../hooks/useAuth';
 import { getAllocations } from '../../api/allocation.api';
 import { getUsers } from '../../api/user.api';
