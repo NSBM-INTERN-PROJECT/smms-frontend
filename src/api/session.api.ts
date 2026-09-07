@@ -1,5 +1,5 @@
 import client from './client';
-import { Session, CreateSessionDto } from '../types/session.types';
+import type { Session, CreateSessionDto } from '../types/session.types';
 
 export const getSessions = async (): Promise<Session[]> => {
   const response = await client.get<Session[]>('/sessions');
