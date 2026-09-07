@@ -7,9 +7,12 @@ import { Modal } from '../../components/ui/Modal';
 import { Table } from '../../components/ui/Table';
 import { Spinner } from '../../components/ui/Spinner';
 import { Select } from '../../components/ui/Select';
-import { getAllocations, createAllocation, Allocation } from '../../api/allocation.api';
-import { getUsers, User } from '../../api/user.api';
-import { getSessions, Session } from '../../api/session.api';
+import { getAllocations, createAllocation } from '../../api/allocation.api';
+import type { Allocation } from '../../types/allocation.types';
+import { getUsers } from '../../api/user.api';
+import type { User } from '../../types/user.types';
+import { getSessions } from '../../api/session.api';
+import type { Session } from '../../types/session.types';
 
 export default function AllocationsPage() {
   const [allocations, setAllocations] = useState<Allocation[]>([]);
