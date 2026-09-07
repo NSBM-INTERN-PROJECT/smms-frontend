@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Users, Plus, CheckCircle, Clock } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Badge from '../../components/ui/Badge';
-import Modal from '../../components/ui/Modal';
-import Table from '../../components/ui/Table';
-import Select from '../../components/ui/Select';
-import Spinner from '../../components/ui/Spinner';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { Badge } from '../../components/ui/Badge';
+import { Modal } from '../../components/ui/Modal';
+import { Table } from '../../components/ui/Table';
+import { Select } from '../../components/ui/Select';
+import { Spinner } from '../../components/ui/Spinner';
 
 import { useToast } from '../../hooks/useToast';
 import { getAllocations, createAllocation } from '../../api/allocation.api';
