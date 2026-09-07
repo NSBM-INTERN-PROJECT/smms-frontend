@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { Calendar, Plus, MapPin, Video, CheckCircle, XCircle, Clock } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Modal from '../../components/ui/Modal';
-import Input from '../../components/ui/Input';
-import Select from '../../components/ui/Select';
-import Badge from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { Modal } from '../../components/ui/Modal';
+import { Input } from '../../components/ui/Input';
+import { Select } from '../../components/ui/Select';
+import { Badge } from '../../components/ui/Badge';
 
 export default function SlotsPage() {
   const [isModalOpen, setIsModalOpen] = useState(false);
