@@ -4,7 +4,8 @@ import { Button } from '../../components/ui/Button';
 import { Card } from '../../components/ui/Card';
 import { Badge } from '../../components/ui/Badge';
 import { Spinner } from '../../components/ui/Spinner';
-import { getReports, Report } from '../../api/report.api';
+import { getReports } from '../../api/report.api';
+import type { Report } from '../../types/report.types';
 
 export default function ReportsPage() {
   const [reports, setReports] = useState<Report[]>([]);
