@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { AlertTriangle, Clock, MoreVertical } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Badge from '../../components/ui/Badge';
+import { Button } from '../../components/ui/Button';
+import { Badge } from '../../components/ui/Badge';
 
 export default function EscalationsPage() {
   // Mock data
