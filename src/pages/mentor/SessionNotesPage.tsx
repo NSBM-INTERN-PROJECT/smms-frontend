@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { FileText, Plus, User } from 'lucide-react';
-import Button from '../../components/ui/Button';
-import Card from '../../components/ui/Card';
-import Modal from '../../components/ui/Modal';
-import Select from '../../components/ui/Select';
-import Spinner from '../../components/ui/Spinner';
+import { Button } from '../../components/ui/Button';
+import { Card } from '../../components/ui/Card';
+import { Modal } from '../../components/ui/Modal';
+import { Select } from '../../components/ui/Select';
+import { Spinner } from '../../components/ui/Spinner';
 import { useAuth } from '../../hooks/useAuth';
 import { getReports, createReport } from '../../api/report.api';
 import { getAllocations } from '../../api/allocation.api';
