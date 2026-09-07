@@ -1,5 +1,5 @@
 import client from './client';
-import { User, CreateUserDto, UpdateUserDto } from '../types/user.types';
+import type { User, CreateUserDto, UpdateUserDto } from '../types/user.types';
 
 export const getUsers = async (role?: string): Promise<User[]> => {
   const response = await client.get<User[]>('/users', { params: { role } });

@@ -1,5 +1,5 @@
 import client from './client';
-import { Report, CreateReportDto } from '../types/report.types';
+import type { Report, CreateReportDto } from '../types/report.types';
 
 export const getReports = async (allocationId?: string): Promise<Report[]> => {
   const response = await client.get<Report[]>('/reports', { params: { allocationId } });

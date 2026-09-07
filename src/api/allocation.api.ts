@@ -1,5 +1,5 @@
 import client from './client';
-import { Allocation, CreateAllocationDto } from '../types/allocation.types';
+import type { Allocation, CreateAllocationDto } from '../types/allocation.types';
 
 export const getAllocations = async (params?: { mentorId?: string; menteeId?: string; sessionId?: string }): Promise<Allocation[]> => {
   const response = await client.get<Allocation[]>('/allocations', { params });

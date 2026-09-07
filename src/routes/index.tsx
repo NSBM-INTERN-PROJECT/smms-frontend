@@ -5,9 +5,9 @@ import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRouter } from './RoleRouter';
 
 // ─── Auth Pages ────────────────────────────────────────────────────────────────
-import LoginPage from '../pages/auth/LoginPage';
-import OtpPage from '../pages/auth/OtpPage';
-import ChangePasswordPage from '../pages/auth/ChangePasswordPage';
+import { LoginPage } from '../pages/auth/LoginPage';
+import { OtpPage } from '../pages/auth/OtpPage';
+import { ChangePasswordPage } from '../pages/auth/ChangePasswordPage';
 
 // ─── Admin Pages ───────────────────────────────────────────────────────────────
 import AdminDashboardPage from '../pages/admin/DashboardPage';

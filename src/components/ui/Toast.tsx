@@ -1,5 +1,5 @@
 import React from 'react';
-import { ToastMessage } from './ToastProvider';
+import type { ToastMessage } from './ToastProvider';
 
 export interface ToastProps {
   toast: ToastMessage;

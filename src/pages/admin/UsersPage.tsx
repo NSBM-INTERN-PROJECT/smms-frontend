@@ -8,7 +8,8 @@ import { Modal } from '../../components/ui/Modal';
 import { Table } from '../../components/ui/Table';
 import { Spinner } from '../../components/ui/Spinner';
 import { Select } from '../../components/ui/Select';
-import { getUsers, createUser, updateUser, User } from '../../api/user.api';
+import { getUsers, createUser, updateUser } from '../../api/user.api';
+import type { User } from '../../types/user.types';
 
 export default function UsersPage() {
   const [users, setUsers] = useState<User[]>([]);
