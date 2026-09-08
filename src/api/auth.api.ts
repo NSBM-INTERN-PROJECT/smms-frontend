@@ -7,7 +7,7 @@ export const login = async (data: LoginDto): Promise<AuthResponse> => {
 };
 
 export const verifyOtp = async (data: OtpVerifyDto): Promise<{ success: boolean; token?: string }> => {
-  const response = await client.post<{ success: boolean; token?: string }>('/auth/otp/verify', data);
+  const response = await client.post<{ success: boolean; token?: string }>('/auth/verify-otp', data);
   return response.data;
 };
 

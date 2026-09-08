@@ -1,21 +1,24 @@
 import React from 'react';
 import { Navigate } from 'react-router-dom';
-// import { useAuth } from '../hooks/useAuth';
+import { useAuthStore } from '../store/auth.store';
 
 export const RoleRouter: React.FC = () => {
-  // Mock auth
-  const token = 'mock-token';
-  const role = 'ADMIN';
+  const token = useAuthStore((s) => s.token);
+  const user = useAuthStore((s) => s.user);
 
-  if (!token) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
 
-  switch (role) {
+  switch (user.role) {
     case 'ADMIN':
       return <Navigate to="/admin/dashboard" replace />;
-    case 'CLINICIAN':
-      return <Navigate to="/clinician/dashboard" replace />;
+    case 'COORDINATOR':
+      return <Navigate to="/coordinator/dashboard" replace />;
+    case 'MENTOR':
+      return <Navigate to="/mentor/dashboard" replace />;
+    case 'STUDENT':
+      return <Navigate to="/student/dashboard" replace />;
     default:
       return <Navigate to="/login" replace />;
   }
