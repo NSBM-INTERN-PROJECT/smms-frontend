@@ -1,8 +1,9 @@
 import React from 'react';
-import { createBrowserRouter, Outlet } from 'react-router-dom';
+import { createBrowserRouter, Navigate, Outlet } from 'react-router-dom';
 import { AppShell } from '../components/layout/AppShell';
 import { ProtectedRoute } from './ProtectedRoute';
 import { RoleRouter } from './RoleRouter';
+import { NotFoundPage } from '../pages/NotFoundPage';
 
 // ─── Auth Pages ────────────────────────────────────────────────────────────────
 import { LoginPage } from '../pages/auth/LoginPage';
@@ -70,6 +71,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <AdminDashboardPage /> },
           { path: 'users', element: <AdminUsersPage /> },
           { path: 'allocations', element: <AdminAllocationsPage /> },
@@ -87,6 +89,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <CoordinatorDashboardPage /> },
           { path: 'allocations', element: <CoordinatorAllocationsPage /> },
           { path: 'escalations', element: <CoordinatorEscalationsPage /> },
@@ -102,6 +105,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <MentorDashboardPage /> },
           { path: 'slots', element: <MentorSlotsPage /> },
           { path: 'meetings', element: <MentorMeetingsPage /> },
@@ -120,6 +124,7 @@ export const router = createBrowserRouter([
           </ProtectedRoute>
         ),
         children: [
+          { index: true, element: <Navigate to="dashboard" replace /> },
           { path: 'dashboard', element: <StudentDashboardPage /> },
           { path: 'profile', element: <StudentProfilePage /> },
           { path: 'meetings', element: <StudentMeetingsPage /> },
@@ -128,5 +133,11 @@ export const router = createBrowserRouter([
         ],
       },
     ],
+  },
+
+  // ─── Catch-all 404 ─────────────────────────────────────────────────────────
+  {
+    path: '*',
+    element: <NotFoundPage />,
   },
 ]);
