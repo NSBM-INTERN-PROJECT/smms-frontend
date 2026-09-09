@@ -13,11 +13,10 @@ export const useAuth = () => {
     setError(null);
     try {
       const response = await loginApi(credentials);
-      authState.setAuth(response.token, response.user);
-      return true;
+      return response;
     } catch (err: any) {
       setError(err.response?.data?.message || 'Login failed');
-      return false;
+      return null;
     } finally {
       setIsLoading(false);
     }
