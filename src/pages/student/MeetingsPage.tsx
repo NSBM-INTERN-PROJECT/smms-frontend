@@ -48,7 +48,7 @@ export default function MeetingsPage() {
     try {
       setLoading(true);
       // Fetch allocation first to get allocationId
-      const allocations = await getAllocations({ menteeId: user?.id, status: 'active' });
+      const allocations = await getAllocations({ menteeId: user?.id ? String(user.id) : undefined });
       if (allocations.length > 0) {
         const allocationId = allocations[0].id;
         const meetingsData = await getMeetings(allocationId);

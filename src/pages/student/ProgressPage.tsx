@@ -36,7 +36,7 @@ export default function ProgressPage() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const allocations = await getAllocations({ menteeId: user?.id, status: 'active' });
+      const allocations = await getAllocations({ menteeId: user?.id ? String(user.id) : undefined });
       let meetingCount = 0;
       let reportCount = 0;
       
