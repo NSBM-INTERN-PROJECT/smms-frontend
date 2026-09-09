@@ -43,9 +43,10 @@ export default function ProfilePage() {
   }, [user]);
 
   const loadProfile = async () => {
+    if (!user?.id) return;
     try {
       setLoading(true);
-      const data = await getUser(user.id);
+      const data = await getUser(String(user.id));
       setProfile(data);
       setEditForm({
         name: data.name || '',
