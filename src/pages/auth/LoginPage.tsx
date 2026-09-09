@@ -17,14 +17,8 @@ export const LoginPage: React.FC = () => {
     setError('');
     setLoading(true);
     try {
-      const res = await login({ email, password });
-      if (res && res.token && res.user) {
-        setAuth(res.token, res.user);
-        navigate('/');
-      } else {
-        // If backend returns success but expects OTP flow
-        navigate('/otp', { state: { email } });
-      }
+      await login({ email, password });
+      navigate('/otp', { state: { email } });
     } catch (err: any) {
       const msg = err?.response?.data?.message
         || err?.message
@@ -73,7 +67,7 @@ export const LoginPage: React.FC = () => {
             Student Mentor Management System
           </p>
           <h1 style={{
-            fontFamily: "'Syne', sans-serif",
+            fontFamily: "var(--font-display)",
             fontSize: '4.5rem',
             fontWeight: 800,
             letterSpacing: '-0.04em',
@@ -135,8 +129,9 @@ export const LoginPage: React.FC = () => {
           boxShadow: '0 25px 60px -15px rgba(0, 0, 0, 0.6)',
         }}>
           <h2 style={{
+            fontFamily: "var(--font-display)",
             fontSize: '1.75rem',
-            fontWeight: 700,
+            fontWeight: 800,
             marginBottom: '0.375rem',
             letterSpacing: '-0.02em',
           }}>
