@@ -1,3 +1,4 @@
+// src/api/client.ts
 import axios from 'axios';
 import { useAuthStore } from '../store/auth.store';
 
@@ -7,10 +8,18 @@ const client = axios.create({
 
 client.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const { token, user } = useAuthStore.getState();
+    
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
+    
+    // Automatically attach backend header authentication requirements
+    if (user) {
+      if (user.id) config.headers['X-User-Id'] = user.id;
+      if (user.role) config.headers['X-User-Role'] = user.role;
+    }
+
     return config;
   },
   (error) => Promise.reject(error)
