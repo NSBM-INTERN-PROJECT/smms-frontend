@@ -20,6 +20,7 @@ export const changePassword = async (data: ChangePasswordDto): Promise<void> => 
   await client.post('/auth/change-password', {
     currentPassword: data.currentPassword,
     newPassword: data.newPassword,
+    confirmPassword: data.confirmPassword,
   });
 };
 

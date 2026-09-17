@@ -24,11 +24,13 @@ export default function MeetingsPage() {
   
   const [newMeeting, setNewMeeting] = useState({
     allocationId: '',
+    studentUserId: '',
     title: '',
-    date: '',
+    scheduledDate: '',
+    scheduledTime: '',
     durationMinutes: 30,
     meetingLink: '',
-    mode: 'Online'
+    mode: 'PHYSICAL'
   });
 
   useEffect(() => {
@@ -41,7 +43,7 @@ export default function MeetingsPage() {
         setMeetings(meetingsData);
 
         const allocationsData = await getAllocations();
-        const myAllocations = allocationsData.filter(a => a.mentorId === user?.id);
+        const myAllocations = allocationsData.filter(a => a.mentorId === user?.id?.toString());
         setAllocations(myAllocations);
 
         const usersData = await getUsers('student');
@@ -60,24 +62,31 @@ export default function MeetingsPage() {
   const handleCreateMeeting = async () => {
     try {
       const created = await createMeeting(newMeeting);
-      setMeetings([...meetings, created]);
+      setMeetings(prev => [created, ...prev]);
       setIsModalOpen(false);
+      setNewMeeting({ allocationId: '', studentUserId: '', title: '', scheduledDate: '', scheduledTime: '', durationMinutes: 30, meetingLink: '', mode: 'PHYSICAL' });
     } catch (error) {
       console.error('Error creating meeting', error);
+      alert('Failed to schedule meeting. Please check all fields are filled.');
     }
   };
 
-  const getStudentName = (allocationId: string) => {
-    const allocation = allocations.find(a => a.id === allocationId);
-    if (!allocation) return 'Unknown Student';
-    const student = students.find(s => s.id === allocation.menteeId);
+  const getStudentName = (meeting: any) => {
+    // Try from allocation first, then direct studentUserId match
+    const allocation = allocations.find(a => a.id === meeting.allocationId?.toString());
+    const studentId = meeting.studentUserId?.toString() || allocation?.menteeId;
+    const student = students.find(s => s.id === studentId);
     return student?.name || student?.email || 'Unknown Student';
   };
 
   const columns = [
     { key: 'title', title: 'Title' },
-    { key: 'student', title: 'Student', render: (row: any) => getStudentName(row.allocationId) },
-    { key: 'date', title: 'Date & Time', render: (row: any) => new Date(row.date).toLocaleString() },
+    { key: 'student', title: 'Student', render: (row: any) => getStudentName(row) },
+    { key: 'date', title: 'Date & Time', render: (row: any) => {
+      if (row.scheduledDate && row.scheduledTime) return `${row.scheduledDate} ${row.scheduledTime}`;
+      if (row.date) return new Date(row.date).toLocaleString();
+      return '-';
+    }},
     { key: 'durationMinutes', title: 'Duration (min)' },
     { key: 'status', title: 'Status', render: (row: any) => (
       <Badge variant={row.status === 'SCHEDULED' ? 'warning' : row.status === 'COMPLETED' ? 'success' : 'error'}>
@@ -166,11 +175,14 @@ export default function MeetingsPage() {
           <Select 
             label="Student" 
             value={newMeeting.allocationId}
-            onChange={(e) => setNewMeeting({...newMeeting, allocationId: e.target.value})}
+            onChange={(e) => {
+              const alloc = allocations.find(a => a.id === e.target.value);
+              setNewMeeting({...newMeeting, allocationId: e.target.value, studentUserId: alloc?.menteeId || ''});
+            }}
             options={[
               { label: 'Select a student...', value: '' },
               ...allocations.map(a => ({
-                label: getStudentName(a.id),
+                label: getStudentName({ allocationId: a.id, studentUserId: a.menteeId }),
                 value: a.id
               }))
             ]} 
@@ -181,10 +193,16 @@ export default function MeetingsPage() {
             onChange={(e) => setNewMeeting({...newMeeting, title: e.target.value})}
           />
           <Input 
-            label="Date & Time" 
-            type="datetime-local" 
-            value={newMeeting.date}
-            onChange={(e) => setNewMeeting({...newMeeting, date: e.target.value})}
+            label="Date" 
+            type="date" 
+            value={newMeeting.scheduledDate}
+            onChange={(e) => setNewMeeting({...newMeeting, scheduledDate: e.target.value})}
+          />
+          <Input 
+            label="Time" 
+            type="time" 
+            value={newMeeting.scheduledTime}
+            onChange={(e) => setNewMeeting({...newMeeting, scheduledTime: e.target.value})}
           />
           <Select 
             label="Duration" 
@@ -202,8 +220,8 @@ export default function MeetingsPage() {
             value={newMeeting.mode}
             onChange={(e) => setNewMeeting({...newMeeting, mode: e.target.value})}
             options={[
-              { label: 'Online', value: 'Online' },
-              { label: 'In-Person', value: 'In-Person' },
+              { label: 'In-Person (Physical)', value: 'PHYSICAL' },
+              { label: 'Online', value: 'ONLINE' },
             ]} 
           />
           <Input 
@@ -213,7 +231,9 @@ export default function MeetingsPage() {
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
             <Button variant="ghost" onClick={() => setIsModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" onClick={handleCreateMeeting}>Schedule</Button>
+            <Button variant="primary" onClick={handleCreateMeeting}
+              disabled={!newMeeting.allocationId || !newMeeting.title || !newMeeting.scheduledDate || !newMeeting.scheduledTime}
+            >Schedule</Button>
           </div>
         </div>
       </Modal>

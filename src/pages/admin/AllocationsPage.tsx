@@ -11,37 +11,31 @@ import { getAllocations, createAllocation } from '../../api/allocation.api';
 import type { Allocation } from '../../types/allocation.types';
 import { getUsers } from '../../api/user.api';
 import type { User } from '../../types/user.types';
-import { getSessions } from '../../api/session.api';
-import type { Session } from '../../types/session.types';
 
 export default function AllocationsPage() {
   const [allocations, setAllocations] = useState<Allocation[]>([]);
   const [mentors, setMentors] = useState<User[]>([]);
   const [students, setStudents] = useState<User[]>([]);
-  const [sessions, setSessions] = useState<Session[]>([]);
   
   const [loading, setLoading] = useState(true);
-  const [sessionFilter, setSessionFilter] = useState('');
   const [isCreateModalOpen, setCreateModalOpen] = useState(false);
   
   const [formData, setFormData] = useState({ mentorId: '', menteeId: '', sessionId: '' });
 
   useEffect(() => {
     fetchData();
-  }, [sessionFilter]);
+  }, []);
 
   const fetchData = async () => {
     setLoading(true);
     try {
-      const [allocs, allUsers, allSessions] = await Promise.all([
-        getAllocations(sessionFilter ? { sessionId: sessionFilter } : undefined),
-        getUsers(),
-        getSessions()
+      const [allocs, allUsers] = await Promise.all([
+        getAllocations(),
+        getUsers()
       ]);
       setAllocations(allocs || []);
       setMentors((allUsers || []).filter(u => u.role === 'mentor'));
       setStudents((allUsers || []).filter(u => u.role === 'student' || u.role === 'mentee'));
-      setSessions(allSessions || []);
     } catch (error) {
       console.error('Failed to fetch data', error);
     } finally {
@@ -55,7 +49,7 @@ export default function AllocationsPage() {
       await createAllocation(formData);
       setCreateModalOpen(false);
       fetchData();
-      setFormData({ mentorId: '', menteeId: '', sessionId: '' });
+      setFormData({ mentorId: '', menteeId: '', sessionId: 'default' });
     } catch (error) {
       console.error('Failed to create allocation', error);
     }
@@ -69,10 +63,6 @@ export default function AllocationsPage() {
     { key: 'student', title: 'Student', render: (a: Allocation) => {
       const student = students.find(s => s.id === a.menteeId);
       return <div><div style={{ fontWeight: 'bold' }}>{student?.name || 'Unknown'}</div><div style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>{student?.email}</div></div>;
-    }},
-    { key: 'session', title: 'Session', render: (a: Allocation) => {
-      const session = sessions.find(s => s.id === a.sessionId);
-      return session?.name || 'N/A';
     }},
     { key: 'status', title: 'Status', render: (a: Allocation) => {
       const statusMap: Record<string, 'success'|'warning'|'info'|'error'> = {
@@ -97,15 +87,6 @@ export default function AllocationsPage() {
           <h1 style={{ color: 'var(--text-primary)', margin: 0, fontFamily: 'var(--font-heading)' }}>Allocations</h1>
         </div>
         <div style={{ display: 'flex', gap: '1rem', alignItems: 'center' }}>
-          <select 
-            className="input-field"
-            value={sessionFilter}
-            onChange={e => setSessionFilter(e.target.value)}
-            style={{ background: 'var(--bg-surface)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '6px', height: '36px', padding: '0 1rem' }}
-          >
-            <option value="">All Sessions</option>
-            {sessions.map(s => <option key={s.id} value={s.id}>{s.name}</option>)}
-          </select>
           <Button variant="primary" onClick={() => setCreateModalOpen(true)}><Plus size={18} style={{ marginRight: '0.5rem' }} /> New Allocation</Button>
         </div>
       </div>
@@ -125,26 +106,20 @@ export default function AllocationsPage() {
       <Modal isOpen={isCreateModalOpen} onClose={() => setCreateModalOpen(false)} title="New Allocation">
         <form onSubmit={handleCreateSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1rem', padding: '1rem' }}>
           <Select 
-            label="Session" 
-            options={sessions.map(s => ({ label: s.name, value: s.id }))} 
-            value={formData.sessionId} 
-            onChange={e => setFormData({...formData, sessionId: e.target.value})} 
-          />
-          <Select 
             label="Mentor" 
-            options={mentors.map(m => ({ label: `${m.name} (${m.email})`, value: m.id }))} 
+            options={[{ label: 'Select a mentor...', value: '' }, ...mentors.map(m => ({ label: `${m.name} (${m.email})`, value: m.id }))]} 
             value={formData.mentorId} 
             onChange={e => setFormData({...formData, mentorId: e.target.value})} 
           />
           <Select 
             label="Student" 
-            options={students.map(s => ({ label: `${s.name} (${s.email})`, value: s.id }))} 
+            options={[{ label: 'Select a student...', value: '' }, ...students.map(s => ({ label: `${s.name} (${s.email})`, value: s.id }))]} 
             value={formData.menteeId} 
             onChange={e => setFormData({...formData, menteeId: e.target.value})} 
           />
           <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '1rem', marginTop: '1rem' }}>
             <Button variant="ghost" type="button" onClick={() => setCreateModalOpen(false)}>Cancel</Button>
-            <Button variant="primary" type="submit" disabled={!formData.mentorId || !formData.menteeId || !formData.sessionId}>Create</Button>
+            <Button variant="primary" type="submit" disabled={!formData.mentorId || !formData.menteeId}>Create</Button>
           </div>
         </form>
       </Modal>
