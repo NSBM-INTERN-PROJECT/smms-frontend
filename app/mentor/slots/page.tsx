@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import {
   Clock,
@@ -16,13 +16,21 @@ import {
 import { MeetingMode, SlotAllocationStatus, SlotStatus } from '@/types';
 
 export default function MentorSlotsPage() {
+  useStoreSync();
   const { user } = useAuth();
   const mentorUserId = user?.id || 18;
 
   const [slots, setSlots] = useState(() => mockStore.getSlots(mentorUserId));
-  const [students] = useState(() =>
+  const [students, setStudents] = useState(() =>
     mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)
   );
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setSlots([...mockStore.getSlots(mentorUserId)]);
+      setStudents([...mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)]);
+    });
+  }, [mentorUserId]);
 
   const todayStr = new Date().toISOString().split('T')[0];
 

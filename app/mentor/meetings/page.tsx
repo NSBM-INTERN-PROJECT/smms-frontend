@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -17,10 +17,17 @@ import {
 import { AttendanceStatus, MeetingResponse, Role } from '@/types';
 
 export default function MentorMeetingsPage() {
+  useStoreSync();
   const { user } = useAuth();
   const mentorUserId = user?.id || 18;
 
   const [meetings, setMeetings] = useState(() => mockStore.getMeetings(Role.MENTOR, mentorUserId));
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setMeetings([...mockStore.getMeetings(Role.MENTOR, mentorUserId)]);
+    });
+  }, [mentorUserId]);
   const [filter, setFilter] = useState<'ALL' | 'SCHEDULED' | 'COMPLETED'>('ALL');
 
   // Attendance Modal state

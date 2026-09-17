@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -17,13 +17,21 @@ import {
 } from 'lucide-react';
 
 export default function StudentProfilePage() {
+  useStoreSync();
   const { user } = useAuth();
   const studentUserId = user?.id || 42;
 
-  const [profile] = useState(() => mockStore.getStudentByUserId(studentUserId));
+  const [profile, setProfile] = useState(() => mockStore.getStudentByUserId(studentUserId));
   const [requests, setRequests] = useState(() =>
     mockStore.getProfileRequests().filter((r) => r.studentUserId === studentUserId)
   );
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setProfile(mockStore.getStudentByUserId(studentUserId));
+      setRequests([...mockStore.getProfileRequests().filter((r) => r.studentUserId === studentUserId)]);
+    });
+  }, [studentUserId]);
 
   // Edit Request Modal
   const [isModalOpen, setIsModalOpen] = useState(false);

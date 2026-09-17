@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockStore } from '@/lib/mockStore';
+import React, { useState, useEffect } from 'react';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -16,10 +16,19 @@ import {
 import { AllocationResponse, AllocationType } from '@/types';
 
 export default function AdminAllocationsPage() {
+  useStoreSync();
   const [activeTab, setActiveTab] = useState<'active' | 'unallocated'>('active');
   const [allocations, setAllocations] = useState(() => mockStore.getAllocations());
   const [students, setStudents] = useState(() => mockStore.getStudents());
   const [mentors, setMentors] = useState(() => mockStore.getMentors());
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setAllocations([...mockStore.getAllocations()]);
+      setStudents([...mockStore.getStudents()]);
+      setMentors([...mockStore.getMentors()]);
+    });
+  }, []);
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMessage, setToastMessage] = useState('');
 

@@ -1,12 +1,18 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockStore } from '@/lib/mockStore';
+import React, { useState, useEffect } from 'react';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { CheckCircle2, Calendar, User, Check } from 'lucide-react';
 import { RecipientStatus } from '@/types';
 
 export default function StudentTasksPage() {
+  useStoreSync();
   const [tasks, setTasks] = useState(() => mockStore.getTasks());
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setTasks([...mockStore.getTasks()]);
+    });
+  }, []);
   const [toastMessage, setToastMessage] = useState('');
 
   const handleMarkSubmitted = (taskId: number) => {

@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatCard } from '@/components/common/StatCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
@@ -21,12 +21,20 @@ import {
 import { AttendanceStatus, Role } from '@/types';
 
 export default function MentorDashboardPage() {
+  useStoreSync();
   const { user } = useAuth();
   const mentorUserId = user?.id || 18;
 
-  const [summary, setSummary] = useState(() => mockStore.getMentorDashboardSummary(mentorUserId));
+  const summary = mockStore.getMentorDashboardSummary(mentorUserId);
   const [meetings, setMeetings] = useState(() => mockStore.getMeetings(Role.MENTOR, mentorUserId));
-  const [students] = useState(() => mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId));
+  const [students, setStudents] = useState(() => mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId));
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setMeetings([...mockStore.getMeetings(Role.MENTOR, mentorUserId)]);
+      setStudents([...mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)]);
+    });
+  }, [mentorUserId]);
 
   // Attendance Modal state
   const [attendanceModalMeetingId, setAttendanceModalMeetingId] = useState<number | null>(null);
@@ -44,7 +52,6 @@ export default function MentorDashboardPage() {
     if (attendanceModalMeetingId) {
       mockStore.markAttendance(attendanceModalMeetingId, attendanceStatus);
       setMeetings([...mockStore.getMeetings(Role.MENTOR, mentorUserId)]);
-      setSummary(mockStore.getMentorDashboardSummary(mentorUserId));
       setAttendanceModalMeetingId(null);
       setToastMessage(`Attendance logged as ${attendanceStatus}.`);
       setTimeout(() => setToastMessage(''), 3500);

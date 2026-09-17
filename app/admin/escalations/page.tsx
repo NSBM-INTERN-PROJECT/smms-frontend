@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockStore } from '@/lib/mockStore';
+import React, { useState, useEffect } from 'react';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -11,7 +11,13 @@ import {
 import { EscalationCategory, EscalationResponse, EscalationStatus } from '@/types';
 
 export default function AdminEscalationsPage() {
+  useStoreSync();
   const [escalations, setEscalations] = useState(() => mockStore.getEscalations());
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setEscalations([...mockStore.getEscalations()]);
+    });
+  }, []);
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
   const [categoryFilter, setCategoryFilter] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');

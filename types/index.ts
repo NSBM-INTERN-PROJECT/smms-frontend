@@ -157,7 +157,11 @@ export interface AuthResponse {
   refreshToken: string;
   tokenType: string;
   expiresIn: number;
-  user: UserResponse;
+  userId?: number;
+  email?: string;
+  fullName?: string;
+  role?: Role;
+  user?: UserResponse;
   mustChangePassword?: boolean;
 }
 

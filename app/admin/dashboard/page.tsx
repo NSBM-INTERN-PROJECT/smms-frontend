@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatCard } from '@/components/common/StatCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import {
@@ -19,6 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function AdminDashboardPage() {
+  useStoreSync();
   const summary = mockStore.getAdminDashboardSummary();
   const escalations = mockStore.getEscalations().filter((e) => e.status === 'OPEN').slice(0, 3);
   const total = summary.totalStudents || 1;
@@ -29,7 +30,12 @@ export default function AdminDashboardPage() {
   const criticalPct = ((summary.studentsCritical / total) * 100).toFixed(1);
 
   // Institutional Attendance Registry State
-  const [students] = useState(() => mockStore.getStudents());
+  const [students, setStudents] = useState(() => mockStore.getStudents());
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setStudents([...mockStore.getStudents()]);
+    });
+  }, []);
   const [attendanceSearchTerm, setAttendanceSearchTerm] = useState('');
   const [attendanceDeptFilter, setAttendanceDeptFilter] = useState('');
   const [attendanceStatusFilter, setAttendanceStatusFilter] = useState<

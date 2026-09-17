@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatCard } from '@/components/common/StatCard';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
@@ -24,13 +24,20 @@ import {
 } from 'lucide-react';
 
 export default function StudentDashboardPage() {
+  useStoreSync();
   const { user } = useAuth();
   const studentUserId = user?.id || 42;
 
-  const [summary, setSummary] = useState(() => mockStore.getStudentDashboardSummary(studentUserId));
+  const summary = mockStore.getStudentDashboardSummary(studentUserId);
   const [slotInvitations, setSlotInvitations] = useState(() => mockStore.getStudentSlotInvitations(studentUserId));
   const mentor = mockStore.getMentorByUserId(summary.mentorUserId);
   const recentNotes = mockStore.getSessionNotes(studentUserId, user?.role).slice(0, 2);
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setSlotInvitations([...mockStore.getStudentSlotInvitations(studentUserId)]);
+    });
+  }, [studentUserId]);
 
   // Reschedule Modal state
   const [selectedSlotId, setSelectedSlotId] = useState<number | null>(null);
@@ -40,7 +47,6 @@ export default function StudentDashboardPage() {
   const handleAcceptSlot = (slotId: number) => {
     mockStore.respondToSlot(slotId, true);
     setSlotInvitations(mockStore.getStudentSlotInvitations(studentUserId));
-    setSummary(mockStore.getStudentDashboardSummary(studentUserId));
   };
 
   const handleRescheduleSubmit = (e: React.FormEvent) => {

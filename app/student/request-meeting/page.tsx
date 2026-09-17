@@ -1,13 +1,14 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Clock, Send, CheckCircle2, HelpCircle } from 'lucide-react';
 import { Role } from '@/types';
 
 export default function RequestMeetingPage() {
+  useStoreSync();
   const { user } = useAuth();
   const studentUserId = user?.id || 42;
 
@@ -24,6 +25,12 @@ export default function RequestMeetingPage() {
   const [requests, setRequests] = useState(() =>
     mockStore.getMeetingRequests(Role.STUDENT, studentUserId)
   );
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setRequests([...mockStore.getMeetingRequests(Role.STUDENT, studentUserId)]);
+    });
+  }, [studentUserId]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

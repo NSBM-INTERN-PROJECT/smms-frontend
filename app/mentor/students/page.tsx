@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import { StudentHistoryReportModal } from '@/components/reports/StudentHistoryReportModal';
@@ -20,12 +20,19 @@ import {
 import { ProgressStatus, StudentProfileResponse } from '@/types';
 
 export default function MentorStudentsPage() {
+  useStoreSync();
   const { user } = useAuth();
   const mentorUserId = user?.id || 18;
 
-  const [students] = useState(() =>
+  const [students, setStudents] = useState(() =>
     mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)
   );
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setStudents([...mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)]);
+    });
+  }, [mentorUserId]);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState<string>('ALL');
 

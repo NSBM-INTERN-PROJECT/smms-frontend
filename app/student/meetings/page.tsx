@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -19,13 +19,22 @@ import {
 import { Role } from '@/types';
 
 export default function StudentMeetingsPage() {
+  useStoreSync();
   const { user } = useAuth();
   const studentUserId = user?.id || 42;
 
   const [activeTab, setActiveTab] = useState<'upcoming' | 'history'>('upcoming');
   const [meetings, setMeetings] = useState(() => mockStore.getMeetings(Role.STUDENT, studentUserId));
   const [slots, setSlots] = useState(() => mockStore.getStudentSlotInvitations(studentUserId));
-  const [sessionNotes] = useState(() => mockStore.getSessionNotes(studentUserId, Role.STUDENT));
+  const [sessionNotes, setSessionNotes] = useState(() => mockStore.getSessionNotes(studentUserId, Role.STUDENT));
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setMeetings([...mockStore.getMeetings(Role.STUDENT, studentUserId)]);
+      setSlots([...mockStore.getStudentSlotInvitations(studentUserId)]);
+      setSessionNotes([...mockStore.getSessionNotes(studentUserId, Role.STUDENT)]);
+    });
+  }, [studentUserId]);
 
   // Reschedule Slot Modal state
   const [isRescheduleOpen, setIsRescheduleOpen] = useState(false);

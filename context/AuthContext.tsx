@@ -4,6 +4,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Role, UserResponse, UserStatus } from '@/types';
 import { authApi } from '@/lib/api';
+import { mockStore } from '@/lib/mockStore';
 
 interface AuthContextType {
   user: UserResponse | null;
@@ -71,29 +72,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const verifyOtp = async (email: string, otp: string) => {
     try {
       const data = await authApi.verifyOtp(email, otp);
-      if (data && data.user) {
-        setUser(data.user);
-        if (typeof window !== 'undefined') {
-          localStorage.setItem('accessToken', data.accessToken);
-          localStorage.setItem('refreshToken', data.refreshToken);
-          localStorage.setItem('currentUser', JSON.stringify(data.user));
-          localStorage.setItem('currentUserId', data.user.id.toString());
-        }
-
-        if (data.user.mustChangePassword) {
-          return { success: true, mustChangePassword: true };
-        }
-
-        if (data.user.role === Role.STUDENT) {
-          router.push('/student/dashboard');
-        } else if (data.user.role === Role.MENTOR) {
-          router.push('/mentor/dashboard');
-        } else {
-          router.push('/admin/dashboard');
-        }
-        return { success: true };
+      if (!data) {
+        return { success: false, message: 'Invalid OTP verification response.' };
       }
-      return { success: false, message: 'Invalid OTP verification response.' };
+
+      const activeUser: UserResponse = data.user || {
+        id: data.userId || 1,
+        email: data.email || email,
+        fullName: data.fullName || 'Authenticated User',
+        role: data.role || Role.ADMIN,
+        status: UserStatus.ACTIVE,
+        mustChangePassword: data.mustChangePassword,
+      };
+
+      setUser(activeUser);
+      if (typeof window !== 'undefined') {
+        if (data.accessToken) localStorage.setItem('accessToken', data.accessToken);
+        if (data.refreshToken) localStorage.setItem('refreshToken', data.refreshToken);
+        localStorage.setItem('currentUser', JSON.stringify(activeUser));
+        localStorage.setItem('currentUserId', activeUser.id.toString());
+      }
+
+      // Re-trigger role-aware store sync
+      mockStore.resetAndFetchAll(activeUser.role, activeUser.id);
+
+      if (data.mustChangePassword || activeUser.mustChangePassword) {
+        return { success: true, mustChangePassword: true };
+      }
+
+      if (activeUser.role === Role.STUDENT) {
+        router.push('/student/dashboard');
+      } else if (activeUser.role === Role.MENTOR) {
+        router.push('/mentor/dashboard');
+      } else {
+        router.push('/admin/dashboard');
+      }
+      return { success: true };
     } catch (err: unknown) {
       const errorObj = err as { response?: { data?: { message?: string } } };
       const msg = errorObj.response?.data?.message || 'OTP verification failed. Please check the code.';
@@ -138,17 +152,42 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       department: newRole === Role.ADMIN ? 'Central Administration' : 'Software Engineering',
     };
 
+    const creds: Record<Role, { email: string; pass: string }> = {
+      [Role.STUDENT]: { email: 'john.doe@smms.edu', pass: 'Password@123' },
+      [Role.MENTOR]: { email: 'grace.hopper@smms.edu', pass: 'Password@123' },
+      [Role.COORDINATOR]: { email: 'coordinator@smms.edu', pass: 'Password@123' },
+      [Role.ADMIN]: { email: 'admin@smms.edu', pass: 'Password@123' },
+      [Role.MANAGEMENT]: { email: 'admin@smms.edu', pass: 'Password@123' },
+    };
+    const cred = creds[newRole] || creds[Role.ADMIN];
+
     try {
-      const accounts = await authApi.getAccounts(0, 50);
-      const match = accounts.find((a) => a.role === newRole);
-      if (match) targetUser = match;
-    } catch {}
+      await authApi.login(cred.email, cred.pass);
+      const authData = await authApi.verifyOtp(cred.email, '123456');
+      if (authData && authData.accessToken) {
+        if (typeof window !== 'undefined') {
+          localStorage.setItem('accessToken', authData.accessToken);
+          if (authData.refreshToken) localStorage.setItem('refreshToken', authData.refreshToken);
+        }
+        targetUser = authData.user || {
+          id: authData.userId || targetUser.id,
+          email: authData.email || targetUser.email,
+          fullName: authData.fullName || targetUser.fullName,
+          role: authData.role || targetUser.role,
+          status: UserStatus.ACTIVE,
+        };
+      }
+    } catch {
+      // Backend not running or demo user not yet in db — fallback to simulated profile
+    }
 
     setUser(targetUser);
     if (typeof window !== 'undefined') {
       localStorage.setItem('currentUser', JSON.stringify(targetUser));
       localStorage.setItem('currentUserId', targetUser.id.toString());
     }
+
+    mockStore.resetAndFetchAll(targetUser.role, targetUser.id);
 
     if (newRole === Role.STUDENT) {
       router.push('/student/dashboard');

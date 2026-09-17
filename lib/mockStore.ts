@@ -35,16 +35,81 @@ import {
   MeetingStatus,
   MeetingMode,
   DashboardSummary,
+  UserStatus,
 } from '@/types';
 import React, { useState, useEffect } from 'react';
 
 type Listener = () => void;
 
 class RealDataStore {
-  private users: UserResponse[] = [];
-  private students: StudentProfileResponse[] = [];
-  private mentors: MentorProfileResponse[] = [];
-  private allocations: AllocationResponse[] = [];
+  private users: UserResponse[] = [
+    { id: 1, email: 'admin@smms.edu', fullName: 'Dr. Alan Turing', role: Role.ADMIN, status: UserStatus.ACTIVE, department: 'Central Administration' },
+    { id: 2, email: 'coordinator@smms.edu', fullName: 'Prof. Ada Lovelace', role: Role.COORDINATOR, status: UserStatus.ACTIVE, department: 'Faculty of Computing' },
+    { id: 18, email: 'grace.hopper@smms.edu', fullName: 'Dr. Grace Hopper', role: Role.MENTOR, status: UserStatus.ACTIVE, department: 'Software Engineering' },
+    { id: 42, email: 'john.doe@smms.edu', fullName: 'John Doe', role: Role.STUDENT, status: UserStatus.ACTIVE, department: 'Software Engineering' },
+  ];
+  private students: StudentProfileResponse[] = [
+    {
+      id: 1,
+      userId: 42,
+      studentId: 'STU-2024-001',
+      fullName: 'John Doe',
+      email: 'john.doe@smms.edu',
+      degree: 'BSc Software Engineering',
+      department: 'Software Engineering',
+      batch: '2024',
+      intake: 'Spring',
+      currentGpa: 3.45,
+      attendanceRate: 92,
+      riskStatus: 'LOW' as any,
+      latestProgressStatus: ProgressStatus.ON_TRACK,
+      allocatedMentorId: 18,
+      allocatedMentorName: 'Dr. Grace Hopper',
+    },
+  ];
+  private mentors: MentorProfileResponse[] = [
+    {
+      id: 1,
+      userId: 18,
+      fullName: 'Dr. Grace Hopper',
+      department: 'Software Engineering',
+      specialization: 'Distributed Systems & Compiler Design',
+      designation: 'Senior Lecturer / Associate Professor',
+      officeLocation: 'Block B, Room 402',
+      contactPhone: '+94 77 123 4567',
+      capacity: 15,
+      currentStudentCount: 1,
+      email: 'grace.hopper@smms.edu',
+    },
+    {
+      id: 2,
+      userId: 2,
+      fullName: 'Prof. Ada Lovelace',
+      department: 'Software Engineering',
+      specialization: 'Algorithms & Computing Architecture',
+      designation: 'Professor & Head of Department',
+      officeLocation: 'Block A, Deanery Suite 101',
+      contactPhone: '+94 77 987 6543',
+      capacity: 20,
+      currentStudentCount: 0,
+      email: 'coordinator@smms.edu',
+    },
+  ];
+  private allocations: AllocationResponse[] = [
+    {
+      id: 1,
+      studentUserId: 42,
+      mentorUserId: 18,
+      allocationType: AllocationType.MANUAL,
+      status: AllocationStatus.ACTIVE,
+      allocatedAt: '2024-01-15',
+      studentName: 'John Doe',
+      studentIdNumber: 'STU-2024-001',
+      batch: '2024',
+      mentorName: 'Dr. Grace Hopper',
+      department: 'Software Engineering',
+    },
+  ];
   private slots: SlotResponse[] = [];
   private meetings: MeetingResponse[] = [];
   private meetingRequests: MeetingRequestResponse[] = [];
@@ -55,14 +120,14 @@ class RealDataStore {
   private notifications: NotificationResponse[] = [];
 
   private adminSummary: DashboardSummary = {
-    totalStudents: 0,
-    totalMentors: 0,
-    activeAllocations: 0,
+    totalStudents: 1,
+    totalMentors: 2,
+    activeAllocations: 1,
     unallocatedStudents: 0,
-    allocationPercentage: 0,
+    allocationPercentage: 100,
     totalMeetingsCompleted: 0,
-    attendanceRate: 90,
-    studentsOnTrack: 0,
+    attendanceRate: 92,
+    studentsOnTrack: 1,
     studentsNeedsAttention: 0,
     studentsAtRisk: 0,
     studentsCritical: 0,
@@ -76,7 +141,6 @@ class RealDataStore {
 
   constructor() {
     if (typeof window !== 'undefined') {
-      // Auto-load data in browser
       setTimeout(() => this.initialize(), 50);
     }
   }
@@ -94,24 +158,76 @@ class RealDataStore {
 
   public async initialize() {
     if (this.initialized) return;
+    if (typeof window !== 'undefined') {
+      const token = localStorage.getItem('accessToken');
+      if (!token) return; // Don't spam protected endpoints before login
+    }
     this.initialized = true;
     await this.fetchAll();
   }
 
-  public async fetchAll() {
+  public async resetAndFetchAll(targetRole?: Role, targetUserId?: number) {
+    this.initialized = true;
+    await this.fetchAll(targetRole, targetUserId);
+  }
+
+  public async fetchAll(currentRole?: Role, currentUserId?: number) {
     try {
-      await Promise.allSettled([
-        this.fetchUsers(),
-        this.fetchStudents(),
-        this.fetchMentors(),
-        this.fetchAllocations(),
-        this.fetchSlots(),
+      let role = currentRole;
+      let userId = currentUserId;
+
+      if (typeof window !== 'undefined') {
+        const token = localStorage.getItem('accessToken');
+        if (!token) return; // Unauthenticated
+
+        if (!role) {
+          const userStr = localStorage.getItem('currentUser');
+          if (userStr) {
+            try {
+              const u = JSON.parse(userStr);
+              role = u.role;
+              userId = u.id;
+            } catch {}
+          }
+        }
+      }
+
+      const tasks: Promise<unknown>[] = [
         this.fetchNotifications(),
-        this.fetchAdminSummary(),
-        this.fetchEscalations(),
-        this.fetchTasks(),
-        this.fetchProfileRequests(),
-      ]);
+      ];
+
+      if (role === Role.ADMIN || role === Role.COORDINATOR) {
+        tasks.push(
+          this.fetchUsers(),
+          this.fetchStudents(),
+          this.fetchMentors(),
+          this.fetchAllocations(),
+          this.fetchAdminSummary(),
+          this.fetchEscalations(),
+          this.fetchProfileRequests()
+        );
+      } else if (role === Role.MENTOR) {
+        tasks.push(
+          this.fetchStudents(),
+          this.fetchSlots(),
+          this.fetchMeetings(Role.MENTOR, userId),
+          this.fetchMeetingRequests(Role.MENTOR),
+          this.fetchSessionNotes(userId, Role.MENTOR),
+          this.fetchEscalations(),
+          this.fetchProfileRequests()
+        );
+      } else if (role === Role.STUDENT) {
+        tasks.push(
+          this.fetchMeetings(Role.STUDENT, userId),
+          this.fetchSlots(),
+          this.fetchMeetingRequests(Role.STUDENT),
+          this.fetchSessionNotes(userId, Role.STUDENT),
+          this.fetchTasks(),
+          this.fetchProfileRequests()
+        );
+      }
+
+      await Promise.allSettled(tasks);
     } catch (err) {
       console.warn('Store fetchAll error:', err);
     } finally {

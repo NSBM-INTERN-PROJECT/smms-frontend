@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -15,6 +15,7 @@ import {
 import { MeetingRequestResponse, Role } from '@/types';
 
 export default function MentorApprovalsPage() {
+  useStoreSync();
   const { user } = useAuth();
   const mentorUserId = user?.id || 18;
 
@@ -23,6 +24,13 @@ export default function MentorApprovalsPage() {
     mockStore.getMeetingRequests(Role.MENTOR, mentorUserId)
   );
   const [profileRequests, setProfileRequests] = useState(() => mockStore.getProfileRequests());
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setMeetingRequests([...mockStore.getMeetingRequests(Role.MENTOR, mentorUserId)]);
+      setProfileRequests([...mockStore.getProfileRequests()]);
+    });
+  }, [mentorUserId]);
   const [toastMessage, setToastMessage] = useState('');
 
   // Meeting Approval Modal state

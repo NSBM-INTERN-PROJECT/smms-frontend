@@ -1,9 +1,9 @@
 'use client';
 
-import React, { useState, Suspense } from 'react';
+import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import { mockStore } from '@/lib/mockStore';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import { StudentHistoryReportModal } from '@/components/reports/StudentHistoryReportModal';
@@ -25,6 +25,7 @@ import {
 } from '@/types';
 
 function SessionsContent() {
+  useStoreSync();
   const { user } = useAuth();
   const searchParams = useSearchParams();
   const mentorUserId = user?.id || 18;
@@ -32,13 +33,21 @@ function SessionsContent() {
   const urlStudentId = searchParams.get('studentId');
   const urlMeetingId = searchParams.get('meetingId');
 
-  const [students] = useState(() =>
+  const [students, setStudents] = useState(() =>
     mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)
   );
   const [notes, setNotes] = useState(() => mockStore.getSessionNotes(mentorUserId, Role.MENTOR));
   const [escalations, setEscalations] = useState(() =>
     mockStore.getEscalations().filter((e) => e.mentorUserId === mentorUserId)
   );
+
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setStudents([...mockStore.getStudents().filter((s) => s.allocatedMentorId === mentorUserId)]);
+      setNotes([...mockStore.getSessionNotes(mentorUserId, Role.MENTOR)]);
+      setEscalations([...mockStore.getEscalations().filter((e) => e.mentorUserId === mentorUserId)]);
+    });
+  }, [mentorUserId]);
 
   // New Session Note form state
   const initialStudentId = urlStudentId || students[0]?.userId.toString() || '42';

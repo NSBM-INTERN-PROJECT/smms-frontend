@@ -62,8 +62,13 @@ apiClient.interceptors.response.use(
 
       const refreshToken = typeof window !== 'undefined' ? localStorage.getItem('refreshToken') : null;
       if (!refreshToken) {
-        if (typeof window !== 'undefined') {
-          localStorage.clear();
+        if (
+          typeof window !== 'undefined' &&
+          window.location.pathname !== '/login' &&
+          window.location.pathname !== '/'
+        ) {
+          localStorage.removeItem('accessToken');
+          localStorage.removeItem('refreshToken');
           // eslint-disable-next-line @next/next/no-location-assign-relative-destination
           window.location.href = '/login';
         }

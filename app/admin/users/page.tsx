@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
-import { mockStore } from '@/lib/mockStore';
+import React, { useState, useEffect } from 'react';
+import { mockStore, useStoreSync } from '@/lib/mockStore';
 import { StatusBadge } from '@/components/common/StatusBadge';
 import { Modal } from '@/components/common/Modal';
 import {
@@ -15,7 +15,13 @@ import {
 import { Role, UserResponse, UserStatus } from '@/types';
 
 export default function AdminUsersPage() {
+  useStoreSync();
   const [users, setUsers] = useState(() => mockStore.getUsers());
+  useEffect(() => {
+    return mockStore.subscribe(() => {
+      setUsers([...mockStore.getUsers()]);
+    });
+  }, []);
   const [roleFilter, setRoleFilter] = useState<string>('ALL');
   const [searchTerm, setSearchTerm] = useState('');
   const [toastMessage, setToastMessage] = useState('');
